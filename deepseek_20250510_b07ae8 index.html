@@ -1,0 +1,15 @@
+
+## 3. setup.py
+
+```python
+from setuptools import setup, find_packages
+
+setup(
+    name="recruitment-tracker",
+    version="0.1.0",
+    packages=find_packages(),
+    install_requires=[
+        # No external dependencies beyond standard library
+    ],
+    python_requires=">=3.6",
+)

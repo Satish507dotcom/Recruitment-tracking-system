@@ -1,0 +1,43 @@
+from dataclasses import dataclass
+from datetime import date
+from typing import List, Optional
+
+
+@dataclass
+class Candidate:
+    """Represents a job candidate in the recruitment pipeline."""
+    candidate_id: str
+    name: str
+    position: str
+    status: str = "Applied"
+    skills: List[str] = None
+    interview_date: Optional[date] = None
+    notes: List[str] = None
+    created_at: date = date.today()
+    last_updated: date = date.today()
+
+    def __post_init__(self):
+        if self.skills is None:
+            self.skills = []
+        if self.notes is None:
+            self.notes = []
+
+    def add_note(self, note: str):
+        """Add a note with timestamp to the candidate's record."""
+        self.notes.append(f"{date.today()}: {note}")
+        self.last_updated = date.today()
+
+    def update_status(self, new_status: str):
+        """Update the candidate's status and record the change."""
+        self.status = new_status
+        self.last_updated = date.today()
+
+
+@dataclass
+class HRActivity:
+    """Represents an HR activity in the recruitment process."""
+    activity_type: str
+    description: str
+    time_spent: float  # in hours
+    date: date = date.today()
+    associated_candidate: Optional[str] = None

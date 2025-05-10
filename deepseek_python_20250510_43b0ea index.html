@@ -1,0 +1,25 @@
+import pytest
+from datetime import date
+from recruitment_tracker.models import Candidate
+
+
+class TestCandidate:
+    def test_candidate_creation(self):
+        candidate = Candidate(
+            candidate_id="CAND-0001",
+            name="John Doe",
+            position="Software Engineer"
+        )
+        assert candidate.name == "John Doe"
+        assert candidate.status == "Applied"
+        assert date.today() == candidate.created_at
+
+    def test_add_note(self):
+        candidate = Candidate(
+            candidate_id="CAND-0001",
+            name="John Doe",
+            position="Software Engineer"
+        )
+        candidate.add_note("Excellent communication skills")
+        assert len(candidate.notes) == 1
+        assert "Excellent communication skills" in candidate.notes[0]

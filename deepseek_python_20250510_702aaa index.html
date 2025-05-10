@@ -1,0 +1,32 @@
+import pytest
+from datetime import date, timedelta
+from recruitment_tracker.tracker import RecruitmentTracker
+
+
+class TestRecruitmentTracker:
+    @pytest.fixture
+    def tracker(self, tmp_path):
+        return RecruitmentTracker(data_dir=str(tmp_path))
+
+    def test_add_candidate(self, tracker):
+        candidate = tracker.add_candidate(
+            name="Alice Smith",
+            position="Data Scientist",
+            skills=["Python", "SQL"]
+        )
+        assert candidate.candidate_id.startswith("CAND-")
+        assert candidate.name == "Alice Smith"
+        assert len(tracker.activities) == 1
+
+    def test_schedule_interview(self, tracker):
+        candidate = tracker.add_candidate(
+            name="Bob Johnson",
+            position="UX Designer"
+        )
+        interview_date = date.today() + timedelta(days=5)
+        tracker.schedule_interview(candidate.candidate_id, interview_date)
+        
+        updated = tracker.get_candidate(candidate.candidate_id)
+        assert updated.interview_date == interview_date
+        assert updated.status == "Interview Scheduled"
+        assert len(tracker.activities) == 2

@@ -1,0 +1,135 @@
+import json
+import os
+from datetime import date, timedelta
+from pathlib import Path
+from typing import Dict, List, Optional
+
+from .models import Candidate, HRActivity
+
+
+class RecruitmentTracker:
+    """Main class for managing the recruitment tracking system."""
+
+    def __init__(self, data_dir: str = "data"):
+        self.candidates: Dict[str, Candidate] = {}
+        self.activities: List[HRActivity] = []
+        self.open_positions: List[str] = []
+        self.next_id = 1
+        self.data_dir = data_dir
+        self.data_file = Path(data_dir) / "recruitment_data.json"
+        
+        # Ensure data directory exists
+        os.makedirs(self.data_dir, exist_ok=True)
+        self.load_data()
+
+    def add_candidate(self, name: str, position: str, skills: List[str] = None) -> Candidate:
+        """Add a new candidate to the tracking system."""
+        candidate_id = f"CAND-{self.next_id:04d}"
+        self.next_id += 1
+        
+        candidate = Candidate(
+            candidate_id=candidate_id,
+            name=name,
+            position=position,
+            skills=skills
+        )
+        
+        self.candidates[candidate_id] = candidate
+        
+        # Log the activity
+        self.add_hr_activity(
+            activity_type="Application Review",
+            description=f"Added new candidate {name} for position {position}",
+            time_spent=0.25,
+            associated_candidate=candidate_id
+        )
+        
+        return candidate
+
+    def get_candidate(self, candidate_id: str) -> Optional[Candidate]:
+        """Retrieve a candidate by ID."""
+        return self.candidates.get(candidate_id)
+
+    def update_candidate_status(self, candidate_id: str, new_status: str):
+        """Update a candidate's status."""
+        candidate = self.get_candidate(candidate_id)
+        if candidate:
+            candidate.update_status(new_status)
+            self.add_hr_activity(
+                activity_type="Status Update",
+                description=f"Updated status to {new_status}",
+                time_spent=0.1,
+                associated_candidate=candidate_id
+            )
+
+    def schedule_interview(self, candidate_id: str, interview_date: date):
+        """Schedule an interview for a candidate."""
+        candidate = self.get_candidate(candidate_id)
+        if candidate:
+            candidate.interview_date = interview_date
+            candidate.update_status("Interview Scheduled")
+            self.add_hr_activity(
+                activity_type="Interview Scheduling",
+                description=f"Scheduled interview for {interview_date}",
+                time_spent=0.5,
+                date=interview_date,
+                associated_candidate=candidate_id
+            )
+
+    def add_hr_activity(self, **kwargs):
+        """Add an HR activity to the log."""
+        self.activities.append(HRActivity(**kwargs))
+
+    def get_upcoming_interviews(self, days: int = 7) -> List[Candidate]:
+        """Get candidates with interviews scheduled in the next N days."""
+        today = date.today()
+        end_date = today + timedelta(days=days)
+        return [
+            c for c in self.candidates.values()
+            if c.interview_date and today <= c.interview_date <= end_date
+        ]
+
+    def save_data(self):
+        """Save all data to JSON file."""
+        data = {
+            "candidates": [c.__dict__ for c in self.candidates.values()],
+            "activities": [a.__dict__ for a in self.activities],
+            "open_positions": self.open_positions,
+            "next_id": self.next_id
+        }
+        
+        with open(self.data_file, 'w') as f:
+            json.dump(data, f, indent=2, default=str)
+
+    def load_data(self):
+        """Load data from JSON file."""
+        if not self.data_file.exists():
+            return
+            
+        with open(self.data_file, 'r') as f:
+            data = json.load(f)
+            
+        self.candidates = {}
+        for cand_data in data.get("candidates", []):
+            # Convert string dates back to date objects
+            for date_field in ['interview_date', 'created_at', 'last_updated']:
+                if cand_data.get(date_field):
+                    cand_data[date_field] = date.fromisoformat(cand_data[date_field])
+            
+            candidate = Candidate(**cand_data)
+            self.candidates[candidate.candidate_id] = candidate
+            
+        self.activities = []
+        for act_data in data.get("activities", []):
+            if act_data.get('date'):
+                act_data['date'] = date.fromisoformat(act_data['date'])
+            self.activities.append(HRActivity(**act_data))
+            
+        self.open_positions = data.get("open_positions", [])
+        self.next_id = data.get("next_id", 1)
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.save_data()
