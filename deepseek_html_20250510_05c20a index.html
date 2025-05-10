@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recruitment Tracker System</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f7fa;
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1, h2 {
+            color: #2c3e50;
+        }
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 5px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #3498db;
+            color: white;
+        }
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+        button, input[type="submit"] {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px 0;
+        }
+        button:hover, input[type="submit"]:hover {
+            background: #2980b9;
+        }
+        input, select {
+            padding: 8px;
+            margin: 5px 0;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .status-applied { background-color: #f39c12; color: white; }
+        .status-screening { background-color: #e67e22; color: white; }
+        .status-interview { background-color: #3498db; color: white; }
+        .status-offer { background-color: #9b59b6; color: white; }
+        .status-hired { background-color: #2ecc71; color: white; }
+        .status-rejected { background-color: #e74c3c; color: white; }
+        .tab {
+            overflow: hidden;
+            border: 1px solid #ccc;
+            background-color: #f1f1f1;
+            border-radius: 5px 5px 0 0;
+        }
+        .tab button {
+            background-color: inherit;
+            float: left;
+            border: none;
+            outline: none;
+            cursor: pointer;
+            padding: 14px 16px;
+            transition: 0.3s;
+            color: #333;
+        }
+        .tab button:hover {
+            background-color: #ddd;
+        }
+        .tab button.active {
+            background-color: #3498db;
+            color: white;
+        }
+        .tabcontent {
+            display: none;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-top: none;
+            border-radius: 0 0 5px 5px;
+            background: white;
+        }
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+        }
+        .stat-card {
+            background: white;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 10px;
+            box-shadow: 0 0 5px rgba(0,0,0,0.1);
+            flex: 1;
+            min-width: 200px;
+            text-align: center;
+        }
+        .stat-card h3 {
+            margin-top: 0;
+            color: #3498db;
+        }
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Recruitment Tracker System</h1>
+        
+        <div class="tab">
+            <button class="tablinks active" onclick="openTab(event, 'dashboard')">Dashboard</button>
+            <button class="tablinks" onclick="openTab(event, 'candidates')">Candidates</button>
+            <button class="tablinks" onclick="openTab(event, 'activities')">HR Activities</button>
+            <button class="tablinks" onclick="openTab(event, 'positions')">Open Positions</button>
+        </div>
+        
+        <!-- Dashboard Tab -->
+        <div id="dashboard" class="tabcontent" style="display: block;">
+            <h2>Recruitment Dashboard</h2>
+            
+            <div class="stats">
+                <div class="stat-card">
+                    <h3>Total Candidates</h3>
+                    <div class="stat-value" id="total-candidates">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Open Positions</h3>
+                    <div class="stat-value" id="open-positions">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Upcoming Interviews</h3>
+                    <div class="stat-value" id="upcoming-interviews">0</div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h3>Recent Candidates</h3>
+                <table id="recent-candidates">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Position</th>
+                            <th>Status</th>
+                            <th>Last Updated</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            
+            <div class="section">
+                <h3>Today's HR Activities</h3>
+                <table id="today-activities">
+                    <thead>
+                        <tr>
+                            <th>Type</th>
+                            <th>Description</th>
+                            <th>Time Spent</th>
+                            <th>Candidate</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Candidates Tab -->
+        <div id="candidates" class="tabcontent">
+            <h2>Candidate Management</h2>
+            
+            <div class="section">
+                <h3>Add New Candidate</h3>
+                <form id="add-candidate-form">
+                    <div class="form-group">
+                        <label for="candidate-name">Name:</label>
+                        <input type="text" id="candidate-name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="candidate-position">Position:</label>
+                        <input type="text" id="candidate-position" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="candidate-skills">Skills (comma separated):</label>
+                        <input type="text" id="candidate-skills">
+                    </div>
+                    <button type="submit">Add Candidate</button>
+                </form>
+            </div>
+            
+            <div class="section">
+                <h3>All Candidates</h3>
+                <table id="all-candidates">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Position</th>
+                            <th>Status</th>
+                            <th>Interview Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- HR Activities Tab -->
+        <div id="activities" class="tabcontent">
+            <h2>HR Activities</h2>
+            
+            <div class="section">
+                <h3>Add HR Activity</h3>
+                <form id="add-activity-form">
+                    <div class="form-group">
+                        <label for="activity-type">Activity Type:</label>
+                        <select id="activity-type" required>
+                            <option value="Screening">Screening</option>
+                            <option value="Interview">Interview</option>
+                            <option value="Admin">Admin</option>
+                            <option value="Meeting">Meeting</option>
+                            <option value="Onboarding">Onboarding</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="activity-description">Description:</label>
+                        <input type="text" id="activity-description" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="activity-time">Time Spent (hours):</label>
+                        <input type="number" id="activity-time" step="0.25" min="0.25" max="8" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="activity-candidate">Associated Candidate (optional):</label>
+                        <select id="activity-candidate">
+                            <option value="">None</option>
+                        </select>
+                    </div>
+                    <button type="submit">Add Activity</button>
+                </form>
+            </div>
+            
+            <div class="section">
+                <h3>Activity Log</h3>
+                <table id="activity-log">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Type</th>
+                            <th>Description</th>
+                            <th>Time</th>
+                            <th>Candidate</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Open Positions Tab -->
+        <div id="positions" class="tabcontent">
+            <h2>Open Positions</h2>
+            
+            <div class="section">
+                <h3>Add New Position</h3>
+                <form id="add-position-form">
+                    <div class="form-group">
+                        <label for="position-name">Position Name:</label>
+                        <input type="text" id="position-name" required>
+                    </div>
+                    <button type="submit">Add Position</button>
+                </form>
+            </div>
+            
+            <div class="section">
+                <h3>Current Open Positions</h3>
+                <table id="positions-list">
+                    <thead>
+                        <tr>
+                            <th>Position</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data storage
+        let recruitmentData = {
+            candidates: [],
+            activities: [],
+            openPositions: [],
+            nextCandidateId: 1
+        };
+
+        // Load data from localStorage
+        function loadData() {
+            const savedData = localStorage.getItem('recruitmentData');
+            if (savedData) {
+                recruitmentData = JSON.parse(savedData);
+                
+                // Convert string dates back to Date objects for candidates
+                recruitmentData.candidates = recruitmentData.candidates.map(candidate => {
+                    if (candidate.interviewDate) {
+                        candidate.interviewDate = new Date(candidate.interviewDate);
+                    }
+                    candidate.createdAt = new Date(candidate.createdAt);
+                    candidate.lastUpdated = new Date(candidate.lastUpdated);
+                    return candidate;
+                });
+                
+                // Convert string dates back to Date objects for activities
+                recruitmentData.activities = recruitmentData.activities.map(activity => {
+                    activity.date = new Date(activity.date);
+                    return activity;
+                });
+            }
+            updateUI();
+        }
+
+        // Save data to localStorage
+        function saveData() {
+            // Convert Date objects to strings for storage
+            const dataToSave = {
+                candidates: recruitmentData.candidates.map(candidate => ({
+                    ...candidate,
+                    interviewDate: candidate.interviewDate ? candidate.interviewDate.toISOString() : null,
+                    createdAt: candidate.createdAt.toISOString(),
+                    lastUpdated: candidate.lastUpdated.toISOString()
+                })),
+                activities: recruitmentData.activities.map(activity => ({
+                    ...activity,
+                    date: activity.date.toISOString()
+                })),
+                openPositions: recruitmentData.openPositions,
+                nextCandidateId: recruitmentData.nextCandidateId
+            };
+            
+            localStorage.setItem('recruitmentData', JSON.stringify(dataToSave));
+            updateUI();
+        }
+
+        // Tab functionality
+        function openTab(evt, tabName) {
+            const tabcontent = document.getElementsByClassName("tabcontent");
+            for (let i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].style.display = "none";
+            }
+            
+            const tablinks = document.getElementsByClassName("tablinks");
+            for (let i = 0; i < tablinks.length; i++) {
+                tablinks[i].className = tablinks[i].className.replace(" active", "");
+            }
+            
+            document.getElementById(tabName).style.display = "block";
+            evt.currentTarget.className += " active";
+        }
+
+        // Update all UI elements
+        function updateUI() {
+            updateDashboard();
+            updateCandidateList();
+            updateActivityList();
+            updatePositionList();
+            updateCandidateDropdown();
+        }
+
+        // Update dashboard statistics and tables
+        function updateDashboard() {
+            // Update stats
+            document.getElementById('total-candidates').textContent = recruitmentData.candidates.length;
+            document.getElementById('open-positions').textContent = recruitmentData.openPositions.length;
+            
+            const today = new Date();
+            const upcomingInterviews = recruitmentData.candidates.filter(candidate => 
+                candidate.interviewDate && 
+                candidate.interviewDate >= today &&
+                candidate.interviewDate <= new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000)
+            ).length;
+            document.getElementById('upcoming-interviews').textContent = upcomingInterviews;
+            
+            // Update recent candidates table
+            const recentCandidatesTable = document.querySelector('#recent-candidates tbody');
+            recentCandidatesTable.innerHTML = '';
+            
+            const sortedCandidates = [...recruitmentData.candidates]
+                .sort((a, b) => b.lastUpdated - a.lastUpdated)
+                .slice(0, 5);
+            
+            sortedCandidates.forEach(candidate => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${candidate.candidateId}</td>
+                    <td>${candidate.name}</td>
+                    <td>${candidate.position}</td>
+                    <td><span class="status-${candidate.status.toLowerCase()}">${candidate.status}</span></td>
+                    <td>${formatDate(candidate.lastUpdated)}</td>
+                `;
+                recentCandidatesTable.appendChild(row);
+            });
+            
+            // Update today's activities table
+            const todayActivitiesTable = document.querySelector('#today-activities tbody');
+            todayActivitiesTable.innerHTML = '';
+            
+            const todayActivities = recruitmentData.activities.filter(activity => 
+                isSameDay(activity.date, new Date())
+            );
+            
+            todayActivities.forEach(activity => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${activity.activityType}</td>
+                    <td>${activity.description}</td>
+                    <td>${activity.timeSpent} hrs</td>
+                    <td>${activity.associatedCandidate || '-'}</td>
+                `;
+                todayActivitiesTable.appendChild(row);
+            });
+        }
+
+        // Update candidate list table
+        function updateCandidateList() {
+            const candidatesTable = document.querySelector('#all-candidates tbody');
+            candidatesTable.innerHTML = '';
+            
+            recruitmentData.candidates.forEach(candidate => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${candidate.candidateId}</td>
+                    <td>${candidate.name}</td>
+                    <td>${candidate.position}</td>
+                    <td>
+                        <select class="status-select" data-candidate-id="${candidate.candidateId}">
+                            <option value="Applied" ${candidate.status === 'Applied' ? 'selected' : ''}>Applied</option>
+                            <option value="Screening" ${candidate.status === 'Screening' ? 'selected' : ''}>Screening</option>
+                            <option value="Interview" ${candidate.status === 'Interview' ? 'selected' : ''}>Interview</option>
+                            <option value="Offer" ${candidate.status === 'Offer' ? 'selected' : ''}>Offer</option>
+                            <option value="Hired" ${candidate.status === 'Hired' ? 'selected' : ''}>Hired</option>
+                            <option value="Rejected" ${candidate.status === 'Rejected' ? 'selected' : ''}>Rejected</option>
+                        </select>
+                    </td>
+                    <td>
+                        ${candidate.interviewDate ? formatDate(candidate.interviewDate) : '-'}
+                        <button class="schedule-btn" data-candidate-id="${candidate.candidateId}">Schedule</button>
+                    </td>
+                    <td>
+                        <button class="add-note-btn" data-candidate-id="${candidate.candidateId}">Add Note</button>
+                        <button class="view-notes-btn" data-candidate-id="${candidate.candidateId}">View Notes</button>
+                    </td>
+                `;
+                candidatesTable.appendChild(row);
+            });
+            
+            // Add event listeners to dynamically created buttons
+            document.querySelectorAll('.status-select').forEach(select => {
+                select.addEventListener('change', function() {
+                    const candidateId = this.getAttribute('data-candidate-id');
+                    const newStatus = this.value;
+                    updateCandidateStatus(candidateId, newStatus);
+                });
+            });
+            
+            document.querySelectorAll('.schedule-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const candidateId = this.getAttribute('data-candidate-id');
+                    scheduleInterview(candidateId);
+                });
+            });
+            
+            document.querySelectorAll('.add-note-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const candidateId = this.getAttribute('data-candidate-id');
+                    addNoteToCandidate(candidateId);
+                });
+            });
+            
+            document.querySelectorAll('.view-notes-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const candidateId = this.getAttribute('data-candidate-id');
+                    viewCandidateNotes(candidateId);
+                });
+            });
+        }
+
+        // Update activity log table
+        function updateActivityList() {
+            const activityTable = document.querySelector('#activity-log tbody');
+            activityTable.innerHTML = '';
+            
+            const sortedActivities = [...recruitmentData.activities]
+                .sort((a, b) => b.date - a.date);
+            
+            sortedActivities.forEach(activity => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${formatDate(activity.date)}</td>
+                    <td>${activity.activityType}</td>
+                    <td>${activity.description}</td>
+                    <td>${activity.timeSpent} hrs</td>
+                    <td>${activity.associatedCandidate || '-'}</td>
+                `;
+                activityTable.appendChild(row);
+            });
+        }
+
+        // Update position list table
+        function updatePositionList() {
+            const positionTable = document.querySelector('#positions-list tbody');
+            positionTable.innerHTML = '';
+            
+            recruitmentData.openPositions.forEach(position => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${position}</td>
+                    <td><button class="fill-position-btn" data-position="${position}">Fill Position</button></td>
+                `;
+                positionTable.appendChild(row);
+            });
+            
+            // Add event listeners to dynamically created buttons
+            document.querySelectorAll('.fill-position-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const position = this.getAttribute('data-position');
+                    fillPosition(position);
+                });
+            });
+        }
+
+        // Update candidate dropdown in activities form
+        function updateCandidateDropdown() {
+            const candidateDropdown = document.getElementById('activity-candidate');
+            candidateDropdown.innerHTML = '<option value="">None</option>';
+            
+            recruitmentData.candidates.forEach(candidate => {
+                const option = document.createElement('option');
+                option.value = candidate.candidateId;
+                option.textContent = `${candidate.candidateId} - ${candidate.name}`;
+                candidateDropdown.appendChild(option);
+            });
+        }
+
+        // Helper function to format dates
+        function formatDate(date) {
+            if (!date) return '';
+            return date.toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric' 
+            });
+        }
+
+        // Helper function to check if two dates are the same day
+        function isSameDay(date1, date2) {
+            return date1.getFullYear() === date2.getFullYear() &&
+                   date1.getMonth() === date2.getMonth() &&
+                   date1.getDate() === date2.getDate();
+        }
+
+        // Form handlers
+        document.getElementById('add-candidate-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const name = document.getElementById('candidate-name').value;
+            const position = document.getElementById('candidate-position').value;
+            const skills = document.getElementById('candidate-skills').value
+                .split(',')
+                .map(skill => skill.trim())
+                .filter(skill => skill);
+            
+            const candidateId = `CAND-${recruitmentData.nextCandidateId.toString().padStart(4, '0')}`;
+            recruitmentData.nextCandidateId++;
+            
+            const newCandidate = {
+                candidateId,
+                name,
+                position,
+                status: 'Applied',
+                skills,
+                interviewDate: null,
+                notes: [],
+                createdAt: new Date(),
+                lastUpdated: new Date()
+            };
+            
+            recruitmentData.candidates.push(newCandidate);
+            
+            // Add HR activity for adding the candidate
+            recruitmentData.activities.push({
+                activityType: 'Application Review',
+                description: `Added new candidate ${name} for position ${position}`,
+                timeSpent: 0.25,
+                date: new Date(),
+                associatedCandidate: candidateId
+            });
+            
+            this.reset();
+            saveData();
+        });
+
+        document.getElementById('add-activity-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const activityType = document.getElementById('activity-type').value;
+            const description = document.getElementById('activity-description').value;
+            const timeSpent = parseFloat(document.getElementById('activity-time').value);
+            const associatedCandidate = document.getElementById('activity-candidate').value || null;
+            
+            recruitmentData.activities.push({
+                activityType,
+                description,
+                timeSpent,
+                date: new Date(),
+                associatedCandidate
+            });
+            
+            this.reset();
+            saveData();
+        });
+
+        document.getElementById('add-position-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const positionName = document.getElementById('position-name').value;
+            
+            if (!recruitmentData.openPositions.includes(positionName)) {
+                recruitmentData.openPositions.push(positionName);
+                this.reset();
+                saveData();
+            } else {
+                alert('This position is already in the list!');
+            }
+        });
+
+        // Candidate management functions
+        function updateCandidateStatus(candidateId, newStatus) {
+            const candidate = recruitmentData.candidates.find(c => c.candidateId === candidateId);
+            if (candidate) {
+                candidate.status = newStatus;
+                candidate.lastUpdated = new Date();
+                
+                // Add HR activity for status change
+                recruitmentData.activities.push({
+                    activityType: 'Status Update',
+                    description: `Changed status to ${newStatus}`,
+                    timeSpent: 0.1,
+                    date: new Date(),
+                    associatedCandidate: candidateId
+                });
+                
+                saveData();
+            }
+        }
+
+        function scheduleInterview(candidateId) {
+            const candidate = recruitmentData.candidates.find(c => c.candidateId === candidateId);
+            if (candidate) {
+                const interviewDate = prompt('Enter interview date (YYYY-MM-DD):');
+                if (interviewDate) {
+                    const date = new Date(interviewDate);
+                    if (!isNaN(date.getTime())) {
+                        candidate.interviewDate = date;
+                        candidate.status = 'Interview Scheduled';
+                        candidate.lastUpdated = new Date();
+                        
+                        // Add HR activity for interview scheduling
+                        recruitmentData.activities.push({
+                            activityType: 'Interview Scheduling',
+                            description: `Scheduled interview for ${formatDate(date)}`,
+                            timeSpent: 0.5,
+                            date: new Date(),
+                            associatedCandidate: candidateId
+                        });
+                        
+                        saveData();
+                    } else {
+                        alert('Invalid date format. Please use YYYY-MM-DD.');
+                    }
+                }
+            }
+        }
+
+        function addNoteToCandidate(candidateId) {
+            const candidate = recruitmentData.candidates.find(c => c.candidateId === candidateId);
+            if (candidate) {
+                const note = prompt('Enter your note:');
+                if (note) {
+                    candidate.notes.push(`${new Date().toLocaleDateString()}: ${note}`);
+                    candidate.lastUpdated = new Date();
+                    
+                    // Add HR activity for adding note
+                    recruitmentData.activities.push({
+                        activityType: 'Note Added',
+                        description: 'Added note to candidate profile',
+                        timeSpent: 0.1,
+                        date: new Date(),
+                        associatedCandidate: candidateId
+                    });
+                    
+                    saveData();
+                }
+            }
+        }
+
+        function viewCandidateNotes(candidateId) {
+            const candidate = recruitmentData.candidates.find(c => c.candidateId === candidateId);
+            if (candidate) {
+                if (candidate.notes.length > 0) {
+                    alert(`Notes for ${candidate.name}:\n\n${candidate.notes.join('\n\n')}`);
+                } else {
+                    alert('No notes available for this candidate.');
+                }
+            }
+        }
+
+        function fillPosition(position) {
+            const index = recruitmentData.openPositions.indexOf(position);
+            if (index !== -1) {
+                recruitmentData.openPositions.splice(index, 1);
+                saveData();
+            }
+        }
+
+        // Initialize the application
+        loadData();
+    </script>
+</body>
+</html>
